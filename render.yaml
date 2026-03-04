@@ -1,0 +1,17 @@
+services:
+  # Backend API Service
+  - type: web
+    name: lms-backend
+    env: node
+    repo: https://github.com/keertiMallayyaHiremath/learning_management_system.git
+    rootDir: backend
+    buildCommand: "npm run build"
+    startCommand: "npm start"
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: DATABASE_URL
+        sync: false
