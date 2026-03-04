@@ -1,0 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const subject_controller_1 = require("./subject.controller");
+const subject_repository_1 = require("./subject.repository");
+const subject_service_1 = require("./subject.service");
+const authMiddleware_1 = require("../../middleware/authMiddleware");
+const router = (0, express_1.Router)();
+const subjectRepository = new subject_repository_1.SubjectRepository();
+const subjectService = new subject_service_1.SubjectService(subjectRepository);
+const subjectController = new subject_controller_1.SubjectController(subjectService);
+router.get('/', subjectController.getSubjects.bind(subjectController));
+router.get('/:subjectId', subjectController.getSubjectById.bind(subjectController));
+router.get('/:subjectId/tree', authMiddleware_1.authenticateToken, subjectController.getSubjectTree.bind(subjectController));
+router.get('/:subjectId/first-video', authMiddleware_1.authenticateToken, subjectController.getFirstUnlockedVideo.bind(subjectController));
+exports.default = router;

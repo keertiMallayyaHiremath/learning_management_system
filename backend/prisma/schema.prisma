@@ -1,0 +1,101 @@
+// Learn more about Prisma schema at https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            BigInt    @id @default(autoincrement())
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  name          String
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  refreshTokens RefreshToken[]
+  videoProgress VideoProgress[]
+  enrollments   Enrollment[]
+}
+
+model Subject {
+  id          BigInt   @id @default(autoincrement())
+  title       String
+  slug        String   @unique
+  description String?
+  isPublished Boolean  @default(false) @map("is_published")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  sections    Section[]
+  enrollments Enrollment[]
+}
+
+model Section {
+  id         BigInt   @id @default(autoincrement())
+  subject    Subject  @relation(fields: [subjectId], references: [id])
+  subjectId  BigInt   @map("subject_id")
+  title      String
+  orderIndex Int      @map("order_index")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  videos     Video[]
+
+  @@unique([subjectId, orderIndex])
+}
+
+model Video {
+  id             BigInt   @id @default(autoincrement())
+  section        Section  @relation(fields: [sectionId], references: [id])
+  sectionId      BigInt   @map("section_id")
+  title          String
+  description    String?
+  youtubeVideoId String   @map("youtube_video_id")
+  orderIndex     Int      @map("order_index")
+  durationSeconds Int     @map("duration_seconds")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  videoProgress  VideoProgress[]
+
+  @@unique([sectionId, orderIndex])
+}
+
+model Enrollment {
+  id        BigInt   @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    BigInt   @map("user_id")
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  subjectId BigInt   @map("subject_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, subjectId])
+}
+
+model VideoProgress {
+  id                  BigInt   @id @default(autoincrement())
+  user                User     @relation(fields: [userId], references: [id])
+  userId              BigInt   @map("user_id")
+  video               Video    @relation(fields: [videoId], references: [id])
+  videoId             BigInt   @map("video_id")
+  lastPositionSeconds Int      @map("last_position_seconds")
+  isCompleted         Boolean  @map("is_completed")
+  completedAt         DateTime? @map("completed_at")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, videoId])
+}
+
+model RefreshToken {
+  id         BigInt   @id @default(autoincrement())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     BigInt   @map("user_id")
+  tokenHash  String   @map("token_hash")
+  expiresAt  DateTime @map("expires_at")
+  revokedAt  DateTime? @map("revoked_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([userId, tokenHash])
+}

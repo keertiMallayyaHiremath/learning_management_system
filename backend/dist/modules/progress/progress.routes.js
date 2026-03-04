@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const progress_controller_1 = require("./progress.controller");
+const progress_repository_1 = require("./progress.repository");
+const progress_service_1 = require("./progress.service");
+const authMiddleware_1 = require("../../middleware/authMiddleware");
+const router = (0, express_1.Router)();
+const progressRepository = new progress_repository_1.ProgressRepository();
+const progressService = new progress_service_1.ProgressService(progressRepository);
+const progressController = new progress_controller_1.ProgressController(progressService);
+router.get('/subjects/:subjectId', authMiddleware_1.authenticateToken, progressController.getSubjectProgress.bind(progressController));
+exports.default = router;
